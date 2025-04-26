@@ -27,6 +27,15 @@ def add_event():
     events[event_id] = event_data
     return jsonify({"event_id": event_id}), 201
 
+@app.route('/events/<int:event_id>', methods=['PUT'])
+def edit_event(event_id):
+    event = events.get(event_id)
+    if event:
+        event_data = request.json
+        event.update(event_data)  # Update event with new data
+        return jsonify({"message": "Event updated successfully!"}), 200
+    return ('Event not found', 404)
+
 @app.route('/events/<int:event_id>', methods=['DELETE'])
 def delete_event(event_id):
     if event_id in events:

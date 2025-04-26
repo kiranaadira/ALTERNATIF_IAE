@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -81,6 +82,7 @@
 <script>
     const EVENTS_URL = 'http://127.0.0.1:5001/events';
     const ORDERS_URL = 'http://127.0.0.1:5002/orders';
+    const USERS_URL = 'http://127.0.0.1:5000/users';
 
     document.addEventListener('DOMContentLoaded', function() {
         loadAdminEvents();
@@ -104,7 +106,10 @@
                                 <p class="text-gray-700"><span class="font-semibold">Price:</span> $${event.price.toFixed(2)}</p>
                                 <p class="text-gray-700"><span class="font-semibold">Date:</span> ${formattedDate}</p>
                             </div>
-                            <button onclick="deleteEvent(${id})" aria-label="Delete event ${event.name}" class="self-start sm:self-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md px-5 py-2 shadow-md transition-colors duration-200 flex items-center justify-center">
+                            <button onclick="editEvent(${id})" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md px-5 py-2 shadow-md transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-edit mr-2"></i> Edit Event
+                            </button>
+                            <button onclick="deleteEvent(${id})" class="bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md px-5 py-2 shadow-md transition-colors duration-200 flex items-center justify-center">
                                 <i class="fas fa-trash-alt mr-2"></i> Delete Event
                             </button>
                         </article>
@@ -112,7 +117,7 @@
                 }
             })
             .catch(() => {
-                document.getElementById('admin-events').innerHTML = `<p class="text-center text-gray-500">Failed to load events.</p>`;
+                document.getElementById('admin-events').innerHTML = '<p class="text-center text-gray-500">Failed to load events.</p>';
             });
     }
 
@@ -125,7 +130,7 @@
 
                 const latestOrders = orders.slice(-6).reverse(); // Last 6, newest first
                 if (latestOrders.length === 0) {
-                    bookingHistoryDiv.innerHTML = `<p class="text-center text-gray-500">No booking history available.</p>`;
+                    bookingHistoryDiv.innerHTML = '<p class="text-center text-gray-500">No booking history available.</p>';
                     return;
                 }
                 latestOrders.forEach(order => {
@@ -144,7 +149,7 @@
                 });
             })
             .catch(() => {
-                document.getElementById('booking-history').innerHTML = `<p class="text-center text-gray-500">Failed to load booking history.</p>`;
+                document.getElementById('booking-history').innerHTML = '<p class="text-center text-gray-500">Failed to load booking history.</p>';
             });
     }
 
@@ -153,8 +158,8 @@
         const price = parseFloat(document.getElementById('event_price').value);
         const date = document.getElementById('event_date').value;
 
-        if (!name || isNaN(price) || price < 0 || !date) {
-            alert('Please fill out all event fields correctly!');
+        if (!name || !price || !date) {
+            alert('Please fill out all event fields!');
             return;
         }
 
@@ -166,11 +171,41 @@
         .then(response => response.json())
         .then(data => {
             alert(data.message || 'Event added!');
-            document.getElementById('add-event-form').reset();
             loadAdminEvents();
         })
         .catch(() => {
             alert('Failed to add event. Please try again.');
+        });
+    }
+
+    function editEvent(eventId) {
+        const eventName = prompt('Enter new event name:');
+        const eventPrice = prompt('Enter new event price:');
+        const eventDate = prompt('Enter new event date (YYYY-MM-DD):');
+
+        if (!eventName || !eventPrice || !eventDate) {
+            alert('All fields are required!');
+            return;
+        }
+
+        const updatedEvent = {
+            name: eventName,
+            price: parseFloat(eventPrice),
+            date: eventDate
+        };
+
+        fetch(`${EVENTS_URL}/${eventId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedEvent)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message || 'Event updated successfully!');
+            loadAdminEvents();
+        })
+        .catch(() => {
+            alert('Failed to update event. Please try again.');
         });
     }
 
@@ -185,6 +220,19 @@
             })
             .catch(() => {
                 alert('Failed to delete event. Please try again.');
+            });
+    }
+
+    function deleteUser(userId) {
+        if (!confirm('Are you sure you want to delete this user?')) return;
+
+        fetch(`${USERS_URL}/${userId}`, { method: 'DELETE' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || 'User deleted!');
+            })
+            .catch(() => {
+                alert('Failed to delete user. Please try again.');
             });
     }
 </script>
