@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Form</title>
     <style>
-        /* Reset and base styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #333; line-height: 1.6; }
 
@@ -27,97 +26,119 @@
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo">Ticket Booking - Form</div>
-        <ul>
-            <li><a href="index.html">Home</a></li>
-        </ul>
-    </nav>
-    <div id="form-container">
-        <h2>Booking Form</h2>
-        <form id="booking-form">
-            <label for="existing-user">Select User:</label>
-            <select id="existing-user" required class="form-select">
-                <!-- This will be populated with existing users -->
-            </select>
 
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" required value="1" min="1" placeholder="Enter quantity" class="form-input">
+<nav>
+    <div class="logo">Ticket Booking - Form</div>
+    <ul>
+        <li><a href="index.html">Home</a></li>
+    </ul>
+</nav>
 
-            <input type="hidden" id="event_id">
-            <input type="hidden" id="total">
-            <button type="submit" class="button">Submit</button>
-        </form>
-    </div>
+<div id="form-container">
+    <h2>Booking Form</h2>
+    <form id="booking-form">
+        <label for="existing-user">Select User:</label>
+        <select id="existing-user" class="form-select" required></select>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const eventId = urlParams.get('event_id');
-            const total = urlParams.get('total');
-            document.getElementById('event_id').value = eventId;
-            document.getElementById('total').value = total;
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" class="form-input" required value="1" min="1">
 
-            // Fetch existing users when page loads from user_service.py
-            fetch('http://127.0.0.1:5000/users') // Endpoint to get all users
-                .then(response => response.json())
-                .then(data => {
-                    const existingUserSelect = document.getElementById('existing-user');
-                    // Populate dropdown with existing users
-                    if (Object.keys(data).length === 0) {
-                        existingUserSelect.innerHTML = '<option>No users available</option>';
-                    } else {
-                        for (const userId in data) {
-                            const user = data[userId];
-                            const option = document.createElement('option');
-                            option.value = userId;
-                            option.textContent = user.name;
-                            existingUserSelect.appendChild(option);
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching users:', error);
-                    alert('Failed to fetch users from server');
-                });
+        <label for="total">Total ($):</label>
+        <input type="text" id="total" name="total" class="form-input" readonly>
 
-            document.getElementById('booking-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-        
-                const userId = document.getElementById('existing-user').value;  // Ambil user_id dari dropdown
-                const quantity = document.getElementById('quantity').value; // Ambil quantity
-                const eventId = document.getElementById('event_id').value; // Ambil event_id
-                const total = document.getElementById('total').value; // Ambil total
-                let orderData = {
-                    user_id: userId, 
-                    event_id: eventId, 
-                    quantity: quantity, 
-                    total: total, 
-                    order_date: new Date().toISOString()
-                };
-        
-                createOrder(orderData);
-            });
+        <input type="hidden" id="event_id">
 
-            function createOrder(orderData) {
-                fetch('http://127.0.0.1:5002/orders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(orderData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Booking successful!');
-                    window.location.href = 'index.html'; // Redirect back to home page
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to process booking');
-                });
-            }
+        <button type="submit" class="button">Submit</button>
+    </form>
+</div>
+
+<script>
+    const USERS_URL = 'http://127.0.0.1:5000/users';
+    const ORDERS_URL = 'http://127.0.0.1:5002/orders';
+    const EVENTS_URL = 'http://127.0.0.1:5001/events';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId = urlParams.get('event_id');
+        document.getElementById('event_id').value = eventId;
+
+        loadUsers();
+        fetchEventDetails(eventId);
+
+        document.getElementById('quantity').addEventListener('input', updateTotal);
+
+        document.getElementById('booking-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            createOrder();
         });
-    </script>
+    });
+
+    function loadUsers() {
+        fetch(USERS_URL)
+            .then(response => response.json())
+            .then(users => {
+                const userSelect = document.getElementById('existing-user');
+                for (const id in users) {
+                    const user = users[id];
+                    const option = document.createElement('option');
+                    option.value = id;
+                    option.textContent = user.name;
+                    userSelect.appendChild(option);
+                }
+            });
+    }
+
+    let pricePerTicket = 0;
+
+    function fetchEventDetails(eventId) {
+        fetch(`${EVENTS_URL}/${eventId}`)
+            .then(response => response.json())
+            .then(event => {
+                pricePerTicket = parseFloat(event.price);
+                updateTotal();
+            });
+    }
+
+    function updateTotal() {
+        const quantity = parseInt(document.getElementById('quantity').value) || 0;
+        const total = quantity * pricePerTicket;
+        document.getElementById('total').value = total.toFixed(2);
+    }
+
+    function createOrder() {
+        const userId = parseInt(document.getElementById('existing-user').value);
+        const eventId = parseInt(document.getElementById('event_id').value);
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const total = parseFloat(document.getElementById('total').value);
+
+        if (!userId || !eventId || quantity <= 0 || total <= 0) {
+            alert('Invalid booking data!');
+            return;
+        }
+
+        const orderData = {
+            user_id: userId,
+            event_id: eventId,
+            quantity: quantity,
+            total: total
+        };
+
+        fetch(ORDERS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Booking successful!');
+            window.location.href = 'index.html';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to process booking.');
+        });
+    }
+</script>
+
 </body>
 </html>

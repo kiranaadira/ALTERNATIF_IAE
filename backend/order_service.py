@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -87,7 +88,7 @@ def create_order():
             "event_id": event_id,
             "quantity": quantity,
             "total": total,
-            "order_date": "2025-04-26"  # Example order date
+            "order_date": datetime.now().strftime("%Y-%m-%d")  # Example order date
         }
 
         # Log the new order being added
