@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Ticket Booking</title>
+    <style>
+        /* Reset and base styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+        
+        nav { background-color: #D32F2F; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        nav .logo { font-size: 24px; font-weight: bold; }
+        nav ul { list-style: none; display: flex; }
+        nav ul li { margin-left: 20px; }
+        nav ul li a { color: white; text-decoration: none; }
+        nav ul li a:hover { color: #ffdd57; }
+
+        #content { max-width: 1000px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        h1 { color: #D32F2F; margin-bottom: 15px; }
+        
+        .event { background-color: #333; color: white; border-radius: 8px; padding: 15px; margin: 10px 0; transition: transform 0.2s; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); }
+        .event:hover { transform: scale(1.05); }
+        
+        .event button { background-color: #ffdd57; color: #333; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; }
+        .event button:hover { background-color: #ffb700; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Ticket Booking</div>
+        <ul>
+            <li><a href="admin.html">Admin</a></li>
+        </ul>
+    </nav>
+    <div id="content">
+        <h1>Available Events</h1>
+        <div id="events"></div>
+
+        <h2>Create a New User</h2>
+        <form id="create-user-form">
+            <input type="text" id="new-user-name" class="form-input" placeholder="User Name" required>
+            <input type="email" id="new-user-email" class="form-input" placeholder="User Email" required>
+            <button type="submit" class="button">Create User</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEvents();
+        });
+
+        function loadEvents() {
+            fetch('http://127.0.0.1:5001/events')
+                .then(response => response.json())
+                .then(data => {
+                    const eventsDiv = document.getElementById('events');
+                    eventsDiv.innerHTML = '';
+                    for (const id in data) {
+                        const event = data[id];
+                        eventsDiv.innerHTML += `
+                            <div class="event">
+                                <h3>${event.name}</h3>
+                                <p>Price: $${event.price}</p>
+                                <p>Date: ${event.date}</p>
+                                <button onclick="bookEvent(${id}, ${event.price})">Book Now</button>
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function bookEvent(eventId, eventPrice) {
+            window.location.href = `booking.html?event_id=${eventId}&total=${eventPrice}`;
+        }
+
+        document.getElementById('create-user-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const userName = document.getElementById('new-user-name').value;
+            const userEmail = document.getElementById('new-user-email').value;
+
+            const newUser = {
+                name: userName,
+                email: userEmail
+            };
+
+            fetch('http://127.0.0.1:5000/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newUser)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('User created successfully!');
+                document.getElementById('new-user-name').value = '';  // Clear input fields
+                document.getElementById('new-user-email').value = '';
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+                alert('Failed to create user');
+            });
+        });
+    </script>
+</body>
+</html>

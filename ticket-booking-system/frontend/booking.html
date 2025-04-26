@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Form</title>
+    <style>
+        /* Reset and base styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+
+        nav { background-color: #D32F2F; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        nav .logo { font-size: 24px; font-weight: bold; }
+        nav ul { list-style: none; display: flex; }
+        nav ul li { margin-left: 20px; }
+        nav ul li a { color: white; text-decoration: none; }
+        nav ul li a:hover { color: #ffdd57; }
+
+        #form-container { max-width: 800px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        h2 { color: #D32F2F; margin-bottom: 15px; }
+
+        .form-input, .form-select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .form-input:focus, .form-select:focus { border-color: #D32F2F; }
+
+        .button { background-color: #ffdd57; color: #333; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; }
+        .button:hover { background-color: #ffb700; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Ticket Booking - Form</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+        </ul>
+    </nav>
+    <div id="form-container">
+        <h2>Booking Form</h2>
+        <form id="booking-form">
+            <label for="existing-user">Select User:</label>
+            <select id="existing-user" required class="form-select">
+                <!-- This will be populated with existing users -->
+            </select>
+
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required value="1" min="1" placeholder="Enter quantity" class="form-input">
+
+            <input type="hidden" id="event_id">
+            <input type="hidden" id="total">
+            <button type="submit" class="button">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('event_id');
+            const total = urlParams.get('total');
+            document.getElementById('event_id').value = eventId;
+            document.getElementById('total').value = total;
+
+            // Fetch existing users when page loads from user_service.py
+            fetch('http://127.0.0.1:5000/users') // Endpoint to get all users
+                .then(response => response.json())
+                .then(data => {
+                    const existingUserSelect = document.getElementById('existing-user');
+                    // Populate dropdown with existing users
+                    if (Object.keys(data).length === 0) {
+                        existingUserSelect.innerHTML = '<option>No users available</option>';
+                    } else {
+                        for (const userId in data) {
+                            const user = data[userId];
+                            const option = document.createElement('option');
+                            option.value = userId;
+                            option.textContent = user.name;
+                            existingUserSelect.appendChild(option);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    alert('Failed to fetch users from server');
+                });
+
+            document.getElementById('booking-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+        
+                const userId = document.getElementById('existing-user').value;  // Ambil user_id dari dropdown
+                const quantity = document.getElementById('quantity').value; // Ambil quantity
+                const eventId = document.getElementById('event_id').value; // Ambil event_id
+                const total = document.getElementById('total').value; // Ambil total
+                let orderData = {
+                    user_id: userId, 
+                    event_id: eventId, 
+                    quantity: quantity, 
+                    total: total, 
+                    order_date: new Date().toISOString()
+                };
+        
+                createOrder(orderData);
+            });
+
+            function createOrder(orderData) {
+                fetch('http://127.0.0.1:5002/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Booking successful!');
+                    window.location.href = 'index.html'; // Redirect back to home page
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to process booking');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

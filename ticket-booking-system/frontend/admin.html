@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Event Ticket Booking</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #333; line-height: 1.6; }
+
+        nav { background-color: #D32F2F; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        nav .logo { font-size: 24px; font-weight: bold; }
+        nav ul { list-style: none; display: flex; }
+        nav ul li { margin-left: 20px; }
+        nav ul li a { color: white; text-decoration: none; }
+        nav ul li a:hover { color: #ffdd57; }
+
+        #admin-panel { max-width: 1000px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        h2, h3 { color: #D32F2F; margin-bottom: 15px; }
+
+        .form-input, .form-select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .form-input:focus, .form-select:focus { border-color: #D32F2F; }
+
+        .button { background-color: #ffdd57; color: #333; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; }
+        .button:hover { background-color: #ffb700; }
+
+        .event, .order { background-color: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .event:hover, .order:hover { transform: scale(1.02); }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">Ticket Booking - Admin</div>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+        </ul>
+    </nav>
+
+    <div id="admin-panel">
+        <h2>Admin Panel</h2>
+
+        <h3>Add New Event</h3>
+        <input type="text" id="event_name" class="form-input" placeholder="Event Name">
+        <input type="number" id="event_price" class="form-input" placeholder="Event Price">
+        <input type="date" id="event_date" class="form-input">
+        <button id="add-event-button" class="button">Add Event</button>
+
+        <h3>Current Events</h3>
+        <div id="admin-events"></div>
+
+        <h3>Booking History</h3>
+        <div id="booking-history"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('add-event-button').addEventListener('click', addEvent);
+            loadAdminEvents();
+            loadBookingHistory();
+        });
+
+        function loadAdminEvents() {
+            fetch('http://127.0.0.1:5001/events')
+                .then(response => response.json())
+                .then(data => {
+                    const adminEventsDiv = document.getElementById('admin-events');
+                    adminEventsDiv.innerHTML = '';
+                    for (const id in data) {
+                        const event = data[id];
+                        adminEventsDiv.innerHTML += `
+                            <div class="event">
+                                <h3>${event.name}</h3>
+                                <p>Price: $${event.price}</p>
+                                <p>Date: ${event.date}</p>
+                                <button onclick="deleteEvent(${id})" class="button">Delete Event</button>
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function loadBookingHistory() {
+            fetch('http://127.0.0.1:5002/orders')
+                .then(response => response.json())
+                .then(data => {
+                    const bookingHistoryDiv = document.getElementById('booking-history');
+                    bookingHistoryDiv.innerHTML = '';
+                    
+                    // Limit to 6 latest orders
+                    const latestOrders = data.slice(-6); // Get the last 6 orders
+                    latestOrders.forEach(order => {
+                        bookingHistoryDiv.innerHTML += `
+                            <div class="order">
+                                <p>Order ID: ${order.order_id}</p>
+                                <p>User Name: ${order.user_name}</p>
+                                <p>Event Name: ${order.event_name}</p>
+                                <p>Quantity: ${order.quantity}</p>
+                                <p>Total: $${order.total}</p>
+                                <p>Order Date: ${order.order_date}</p>
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        function addEvent() {
+            const name = document.getElementById('event_name').value;
+            const price = document.getElementById('event_price').value;
+            const date = document.getElementById('event_date').value;
+
+            fetch('http://127.0.0.1:5001/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, price, date })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadAdminEvents();
+            });
+        }
+
+        function deleteEvent(eventId) {
+            fetch(`http://127.0.0.1:5001/events/${eventId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadAdminEvents(); // Refresh the admin event list after deletion
+            });
+        }
+    </script>
+</body>
+</html>
