@@ -4,7 +4,7 @@
 - [📚 Introduction](#-introduction)
 - [🏻🏩 Services Overview](#-services-overview)
 - [📋 API Endpoint Summary](#-api-endpoint-summary)
-- [💑 API Documentation](#-api-documentation)
+- [📃 API Documentation](#-api-documentation)
   - [🔹 event_service](#-event_service)
   - [🔹 order_service](#-order_service)
   - [🔹 user_service](#-user_service)
