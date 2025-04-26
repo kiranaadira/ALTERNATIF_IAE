@@ -1,64 +1,88 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin Panel - Event Ticket Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background-color: #f8f8f8; color: #333; line-height: 1.6; }
-
-        nav { background-color: #D32F2F; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-        nav .logo { font-size: 24px; font-weight: bold; }
-        nav ul { list-style: none; display: flex; }
-        nav ul li { margin-left: 20px; }
-        nav ul li a { color: white; text-decoration: none; }
-        nav ul li a:hover { color: #ffdd57; }
-
-        #admin-panel { max-width: 1000px; margin: 20px auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
-        h2, h3 { color: #D32F2F; margin-bottom: 15px; }
-
-        .form-input, .form-select { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-        .form-input:focus, .form-select:focus { border-color: #D32F2F; }
-
-        .button { background-color: #ffdd57; color: #333; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; }
-        .button:hover { background-color: #ffb700; }
-
-        .event, .order { background-color: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
-        .event:hover, .order:hover { transform: scale(1.02); transition: 0.3s ease; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Smooth scale transition for event and order cards */
+        .card-hover:hover {
+            transform: scale(1.03);
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-<nav>
-    <div class="logo">Ticket Booking - Admin</div>
-    <ul>
-        <li><a href="index.html">Home</a></li>
-    </ul>
-</nav>
+    <nav class="bg-red-700 shadow-md">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="text-white font-extrabold text-2xl tracking-wide select-none flex items-center space-x-2">
+                <i class="fas fa-ticket-alt text-yellow-400"></i>
+                <span>Ticket Booking - Admin</span>
+            </div>
+            <ul class="flex space-x-6">
+                <li>
+                    <a href="index.html" class="text-yellow-400 hover:text-yellow-300 font-semibold transition-colors duration-200">
+                        User
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-<div id="admin-panel">
-    <h2>Admin Panel</h2>
+    <main class="flex-grow max-w-7xl mx-auto px-6 py-10 w-full">
+        <h1 class="text-4xl font-extrabold text-red-700 mb-10 text-center sm:text-left">Admin Panel</h1>
 
-    <h3>Add New Event</h3>
-    <input type="text" id="event_name" class="form-input" placeholder="Event Name" required>
-    <input type="number" id="event_price" class="form-input" placeholder="Event Price" min="0" step="0.01" required>
-    <input type="date" id="event_date" class="form-input" required>
-    <button id="add-event-button" class="button">Add Event</button>
+        <section aria-labelledby="add-event-title" class="mb-14 max-w-3xl mx-auto sm:mx-0">
+            <h2 id="add-event-title" class="text-2xl font-semibold text-red-700 mb-6 border-b-2 border-red-700 pb-2">Add New Event</h2>
+            <form id="add-event-form" class="space-y-6" onsubmit="event.preventDefault(); addEvent();">
+                <div>
+                    <label for="event_name" class="block text-gray-700 font-medium mb-1">Event Name</label>
+                    <input type="text" id="event_name" class="w-full rounded-md border border-gray-300 focus:border-red-600 focus:ring-2 focus:ring-red-300 px-4 py-3 text-gray-900 placeholder-gray-400" placeholder="Enter event name" required />
+                </div>
+                <div>
+                    <label for="event_price" class="block text-gray-700 font-medium mb-1">Event Price ($)</label>
+                    <input type="number" id="event_price" min="0" step="0.01" class="w-full rounded-md border border-gray-300 focus:border-red-600 focus:ring-2 focus:ring-red-300 px-4 py-3 text-gray-900 placeholder-gray-400" placeholder="0.00" required />
+                </div>
+                <div>
+                    <label for="event_date" class="block text-gray-700 font-medium mb-1">Event Date</label>
+                    <input type="date" id="event_date" class="w-full rounded-md border border-gray-300 focus:border-red-600 focus:ring-2 focus:ring-red-300 px-4 py-3 text-gray-900 placeholder-gray-400" required />
+                </div>
+                <button type="submit" id="add-event-button" class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold rounded-md px-6 py-3 shadow-md transition-colors duration-200 w-full sm:w-auto">
+                    <i class="fas fa-plus mr-2"></i> Add Event
+                </button>
+            </form>
+        </section>
 
-    <h3>Current Events</h3>
-    <div id="admin-events"></div>
+        <section aria-labelledby="current-events-title" class="mb-14 max-w-4xl mx-auto sm:mx-0">
+            <h2 id="current-events-title" class="text-2xl font-semibold text-red-700 mb-6 border-b-2 border-red-700 pb-2">Current Events</h2>
+            <div id="admin-events" class="space-y-6">
+                <!-- Events will be loaded here -->
+            </div>
+        </section>
 
-    <h3>Booking History (Latest 6)</h3>
-    <div id="booking-history"></div>
-</div>
+        <section aria-labelledby="booking-history-title" class="max-w-4xl mx-auto sm:mx-0">
+            <h2 id="booking-history-title" class="text-2xl font-semibold text-red-700 mb-6 border-b-2 border-red-700 pb-2">Booking History (Latest 6)</h2>
+            <div id="booking-history" class="space-y-6">
+                <!-- Booking history will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-red-700 text-yellow-300 text-center py-4 mt-auto select-none">
+        &copy; 2024 Ticket Booking Admin Panel. All rights reserved.
+    </footer>
 
 <script>
     const EVENTS_URL = 'http://127.0.0.1:5001/events';
     const ORDERS_URL = 'http://127.0.0.1:5002/orders';
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('add-event-button').addEventListener('click', addEvent);
         loadAdminEvents();
         loadBookingHistory();
     });
@@ -71,15 +95,24 @@
                 adminEventsDiv.innerHTML = '';
                 for (const id in events) {
                     const event = events[id];
+                    const eventDate = new Date(event.date);
+                    const formattedDate = eventDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
                     adminEventsDiv.innerHTML += `
-                        <div class="event">
-                            <h3>${event.name}</h3>
-                            <p>Price: $${event.price.toFixed(2)}</p>
-                            <p>Date: ${new Date(event.date).toLocaleDateString()}</p>
-                            <button onclick="deleteEvent(${id})" class="button">Delete Event</button>
-                        </div>
+                        <article class="card-hover bg-white border border-gray-200 rounded-lg shadow-md p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                            <div class="mb-4 sm:mb-0">
+                                <h3 class="text-xl font-semibold text-red-700 mb-1">${event.name}</h3>
+                                <p class="text-gray-700"><span class="font-semibold">Price:</span> $${event.price.toFixed(2)}</p>
+                                <p class="text-gray-700"><span class="font-semibold">Date:</span> ${formattedDate}</p>
+                            </div>
+                            <button onclick="deleteEvent(${id})" aria-label="Delete event ${event.name}" class="self-start sm:self-auto bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md px-5 py-2 shadow-md transition-colors duration-200 flex items-center justify-center">
+                                <i class="fas fa-trash-alt mr-2"></i> Delete Event
+                            </button>
+                        </article>
                     `;
                 }
+            })
+            .catch(() => {
+                document.getElementById('admin-events').innerHTML = `<p class="text-center text-gray-500">Failed to load events.</p>`;
             });
     }
 
@@ -91,18 +124,27 @@
                 bookingHistoryDiv.innerHTML = '';
 
                 const latestOrders = orders.slice(-6).reverse(); // Last 6, newest first
+                if (latestOrders.length === 0) {
+                    bookingHistoryDiv.innerHTML = `<p class="text-center text-gray-500">No booking history available.</p>`;
+                    return;
+                }
                 latestOrders.forEach(order => {
+                    const orderDate = new Date(order.order_date);
+                    const formattedOrderDate = orderDate.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
                     bookingHistoryDiv.innerHTML += `
-                        <div class="order">
-                            <p><strong>Order ID:</strong> ${order.order_id}</p>
-                            <p><strong>User:</strong> ${order.user_name}</p>
-                            <p><strong>Event:</strong> ${order.event_name}</p>
-                            <p><strong>Quantity:</strong> ${order.quantity}</p>
-                            <p><strong>Total:</strong> $${order.total.toFixed(2)}</p>
-                            <p><strong>Order Date:</strong> ${new Date(order.order_date).toLocaleString()}</p>
-                        </div>
+                        <article class="card-hover bg-white border border-gray-200 rounded-lg shadow-md p-6 space-y-1">
+                            <p><span class="font-semibold text-red-700">Order ID:</span> ${order.order_id}</p>
+                            <p><span class="font-semibold text-red-700">User:</span> ${order.user_name}</p>
+                            <p><span class="font-semibold text-red-700">Event:</span> ${order.event_name}</p>
+                            <p><span class="font-semibold text-red-700">Quantity:</span> ${order.quantity}</p>
+                            <p><span class="font-semibold text-red-700">Total:</span> $${order.total.toFixed(2)}</p>
+                            <p><span class="font-semibold text-red-700">Order Date:</span> ${formattedOrderDate}</p>
+                        </article>
                     `;
                 });
+            })
+            .catch(() => {
+                document.getElementById('booking-history').innerHTML = `<p class="text-center text-gray-500">Failed to load booking history.</p>`;
             });
     }
 
@@ -111,8 +153,8 @@
         const price = parseFloat(document.getElementById('event_price').value);
         const date = document.getElementById('event_date').value;
 
-        if (!name || !price || !date) {
-            alert('Please fill out all event fields!');
+        if (!name || isNaN(price) || price < 0 || !date) {
+            alert('Please fill out all event fields correctly!');
             return;
         }
 
@@ -124,7 +166,11 @@
         .then(response => response.json())
         .then(data => {
             alert(data.message || 'Event added!');
+            document.getElementById('add-event-form').reset();
             loadAdminEvents();
+        })
+        .catch(() => {
+            alert('Failed to add event. Please try again.');
         });
     }
 
@@ -136,6 +182,9 @@
             .then(data => {
                 alert(data.message || 'Event deleted!');
                 loadAdminEvents();
+            })
+            .catch(() => {
+                alert('Failed to delete event. Please try again.');
             });
     }
 </script>
